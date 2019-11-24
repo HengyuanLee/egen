@@ -1,4 +1,4 @@
-module github.com/generator
+module github.com/HengyuanLee/egen/generator
 
 go 1.13
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/generator"
+	"github.com/HengyuanLee/egen/generator"
 )
 
 func main() {
