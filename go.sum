@@ -1,3 +1,5 @@
+github.com/HengyuanLee/egen/generator v0.0.0-20191124012112-973e5e0c2996 h1:eEVc18ZlYU48no2LMi1qII4kQBFl5R0cy3wTbaF5izw=
+github.com/HengyuanLee/egen/generator v0.0.0-20191124012112-973e5e0c2996/go.mod h1:MJFqWynBAF0zsw3e6g2mSBdQnNUzof/5NwCh18ScKAs=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
