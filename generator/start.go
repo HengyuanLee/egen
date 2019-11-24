@@ -89,6 +89,11 @@ func Start() {
 			g_xlsxfiles = append(g_xlsxfiles, f)
 		}
 	}
+	if len(xlsxfiles) == 0 {
+		Error("指定路径或文件找到数量为0")
+		return
+	}
+
 	increment := (*flagGenAll == "true")
 	xlsxfiles = getGenFiles(xlsxfiles, increment)
 
@@ -142,6 +147,9 @@ func success() {
 
 //根据全/曾量生成，过滤生成的文件
 func getGenFiles(files []string, increment bool) []string {
+	if len(files) == 0 {
+		return files
+	}
 	result := make([]string, 0)
 	curMd5Map := make(map[string]string, 0)
 	cacheMd5Map := make(map[string]string, 0)
