@@ -361,93 +361,90 @@ func (g *Genjson) processSheetLoop(buf *bytes.Buffer, filename string, sheetName
 					tk := kvs[0]
 					tv := kvs[1]
 					if !isBaseType(tk) && tk != "string" {
-						Error("json: Dictionary只支持key都是string或基本数据类型 : " + tname)
+						Error("json: Dictionary只支持key都是string或基本数据类型 id:%s, key:%s ", row.Cells[0].String(),  tname)
 					}
 					value = ""
 					var curfname string
+					//从新遍历出所有filedname 为当前map字段名的值对
 					for i := index; i < len(row.Cells); i++ {
-						_cell := row.Cells[i]
 						_fname := fieldCells[i].String()
-						_cellStr := _cell.String()
 						if i == index {
 							curfname = _fname
 							buf.WriteString("\"" + curfname + "\" : {")
 						}
-						if _fname != curfname || _cellStr == "" {
+						if _fname == "" || _fname != curfname{
 							continue
 						}
-						_strss := strings.Split(_cellStr, "[")
-						for _si, _s := range _strss {
-							if _si == 0 {
+						if i+1 >= len(row.Cells) {
+							Warn("json: map找不到值定义，将被忽略，id:%s, key:%s",row.Cells[0].String(), row.Cells[i].String())
+							continue
+						}
+						_key := strings.TrimSpace(row.Cells[i].String())
+						_val := strings.TrimSpace(row.Cells[i+1].String())
+						if _key == "" || _val == ""{
+							Warn("json: map的key或者value为空，将被忽略，id:%s, key:%s  value:%s",row.Cells[0].String(), _key, _val)
+							continue
+						}
+						isAlias := (getCmdValue(sheet, i, "alias") == "true")
+						if isAlias {
+							_key = getFileAliasValue(filename, _key)
+							_val = getFileAliasValue(filename, _val)
+						}
+						if curfname != "" && curfname == _fname {
+							writedCellMap[i] = true
+							writedCellMap[i+1] = true
+							if _val == "" {
+								_val = g.getEmptyVal(tv)
 								continue
 							}
-							_strs := strings.Split(_s, "]")
-							if len(_strs) != 2 {
-								Error("json: 错误的map配置：" + _cellStr)
-								return
+							if isBaseType(tv) {
+							} else if tv == "string" {
+								_val = "\"" + _val + "\""
 							} else {
-
-								_key := _strs[0]
-								_val := _strs[1]
-								isAlias := (getCmdValue(sheet, i, "alias") == "true")
-								if isAlias {
-									_key = getFileAliasValue(filename, _key)
-									_val = getFileAliasValue(filename, _val)
+								var subFilename string
+								var subSheetName string
+								//被点分开说明是外部表
+								ss := strings.Split(tv, ".")
+								if len(ss) == 2 {
+									subFilename = ss[0]
+									subSheetName = ss[1]
+								} else {
+									subFilename = filename
+									subSheetName = tv
 								}
-								if curfname != "" && curfname == _fname {
-									writedCellMap[i] = true
-									if _val == "" {
-										_val = g.getEmptyVal(tv)
+								subsheet, ok := getFileSheet(subFilename, subSheetName)
+								if ok {
+									st := getSheetType(subsheet)
+									if st == "enum" {
+										Error("json: map的value不支持枚举类型 " + curfname)
 										continue
-									}
-									if isBaseType(tv) {
-										//_val = _val
-									} else if tv == "string" {
-										_val = "\"" + _val + "\""
-									} else {
-										var subFilename string
-										var subSheetName string
-										//被点分开说明是外部表
-										ss := strings.Split(tv, ".")
-										if len(ss) == 2 {
-											subFilename = ss[0]
-											subSheetName = ss[1]
-										} else {
-											subFilename = filename
-											subSheetName = tv
-										}
-										subsheet, ok := getFileSheet(subFilename, subSheetName)
-										if ok {
-											st := getSheetType(subsheet)
-											if st == "enum" {
-												Error("json: map的value不支持枚举类型 " + curfname)
-												continue
-											} else if st == "object" {
-												isRoot := false
-												isList := true
-												subBuf := bytes.NewBufferString("")
-												//类定义的根据所填的id去找
-												ids := strings.Split(_val, listSplit)
-												if isAlias {
-													for index, id := range ids {
-														ids[index] = getFileAliasValue(filename, id)
-													}
-												}
-												g.processSheetLoop(subBuf, subFilename, subSheetName, ids, level+1, isRoot, isList)
-												_val = subBuf.String()
+									} else if st == "object" {
+										isRoot := false
+										isList := true
+										subBuf := bytes.NewBufferString("")
+										//类定义的根据所填的id去找
+										ids := strings.Split(_val, listSplit)
+										if isAlias {
+											for index, id := range ids {
+												ids[index] = getFileAliasValue(filename, id)
 											}
 										}
+										g.processSheetLoop(subBuf, subFilename, subSheetName, ids, level+1, isRoot, isList)
+										_val = subBuf.String()
 									}
-									_val = strings.TrimSuffix(_val, ",")
-									value += "\n" + getTabs(level+2) + "\"" + _key + "\" : " + _val + ","
 								}
 							}
+							_val = strings.TrimSuffix(_val, ",")
+							value += "\n" + getTabs(level+2) + "\"" + _key + "\" : " + _val + ","
 						}
 					}
 					value = strings.TrimSuffix(value, ",")
 					value += "\n" + getTabs(level+1) + "}"
 				}
-			} else {
+			} else {//剩下是object和枚举
+				if tname == "" {
+					continue
+				}
 				subFilename := filename
 				subSheetName := tname
 				//被点分开说明是外部表

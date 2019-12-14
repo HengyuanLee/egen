@@ -117,7 +117,7 @@ func getFileSheet(filename string, sheetName string) (*xlsx.Sheet, bool) {
 			return sheet, true
 		}
 	}
-	Warn("文件 " + filename + " 中找不到sheet: " + sheetName)
+	Error("文件 " + filename + " 中找不到sheet: " + sheetName)
 	return nil, false
 }
 func getFileAliasValue(filename string, alias string) string {

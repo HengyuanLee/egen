@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const Version = "1.0"
+const Version = "1.1.0"
 
 // 标准参数
 var (
@@ -98,7 +98,7 @@ func Start() {
 	xlsxfiles = getGenFiles(xlsxfiles, increment)
 
 	Info("------------------------------------------------------------------------")
-	Info("sxgen Version : " + Version)
+	Info("egen v" + Version)
 	if increment == true {
 		Info("生成模式： 增量生成。")
 	} else {
