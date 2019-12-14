@@ -1,7 +1,9 @@
-# egen
 #### 一款跨平台灵活的导Excel表工具:
 ###### 基于go语言编写，支持Windows，OSX，linux
-
+* ###### 下载：
+* ###### [工具下载地址](https://github.com/HengyuanLee/egen/releases/tag/v1.0.0)
+* ###### [项目源码地址](https://github.com/HengyuanLee/egen)
+## egen
 #### 特色功能：
 * **别名机制**：数值填写支持别名，如填表的int类型内容可以是别名中文，生成代码时会自定替换成真正的int值。方便直观阅读，避免数据量大时阅读混乱。
 * **嵌入外表**：填表时如果引用到别的表定义的数据，类型一栏中只需“Excel文件名.表名”，然后在值栏中填写对应的外表id即可。程序不必读表时各种乱跳获取id去查表。
@@ -65,7 +67,7 @@
 #### 填表格式：
 ###### 如要生成Char.xlsx文件，并引用Global.xlsx文件：
 ###### 主表定义：
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20191122195647777.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTI3NDA5OTI=,size_16,color_FFFFFF,t_70)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20191207204113940.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTI3NDA5OTI=,size_16,color_FFFFFF,t_70)
 ###### 表对象Pos定义：
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/2019112219572116.png)
 ###### 表枚举CareerType定义：
