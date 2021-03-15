@@ -4,14 +4,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 namespace TableData{
-	public enum JobType {
-		Warrior = 1,    //战士  战士
-		Mage = 2,    //法师  法师
-		GG = 3,    //  GG
-		DD = 4,
-		FF = 5,
-		EE = 6,
-		RT = 7,
-		NN = 8,
+	public class Map{
+		public uint id;	 //唯一ID
+		public string name;	 //名称
+		public string resID;	 //资源
+		public string miniResID;	 //mini地图资源
+		public string desc;	 //描述
 	}
 }

@@ -5,12 +5,11 @@ import (
 	"errors"
 	"path/filepath"
 	"strings"
-
 	"github.com/tealeg/xlsx"
 )
 
 var (
-	PackageName = "ConfigData"
+	PackageName = "TableData"
 	Comment     = true
 	Xlsxfiles   = make([]string, 0)
 )
@@ -253,4 +252,14 @@ func toLow(str string) string {
 		strArry[0] += 32
 	}
 	return string(strArry)
+}
+func isListField(name string) bool {
+	rightIndex := strings.Index(name, ",")
+	exist_c := rightIndex != -1
+	return exist_c == false && strings.HasPrefix(name, "<") && strings.HasSuffix(name, ">")
+}
+func isMapField(name string) bool {
+	rightIndex := strings.Index(name, ",")
+	exist_c := rightIndex != -1
+	return exist_c && strings.HasPrefix(name, "<") && strings.HasSuffix(name, ">")
 }

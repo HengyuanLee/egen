@@ -280,8 +280,7 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 				}
 			}
 
-			rightIndex := strings.Index(tname, "]")
-			isMap := (strings.HasPrefix(tname, "[") && rightIndex != 1 && rightIndex != -1)
+			isMap := isMapField(tname)
 			if isMap { //字典kv对
 				_, err := strconv.Atoi(fname)
 				if err == nil {
@@ -293,9 +292,10 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 			buf.WriteString(getTabs(level + 1))
 
 			//对象是否数组类型
-			isList := strings.HasPrefix(tname, "[]")
+			isList := isListField(tname)
 			if isList {
-				tname = strings.TrimPrefix(tname, "[]")
+				tname = strings.TrimPrefix(tname, "<")
+				tname = strings.TrimSuffix(tname, ">")
 			}
 			if isBaseType(tname) {
 				buf.WriteString(fname + " = ")
@@ -365,8 +365,9 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 			} else if isMap {
 				//map类型了，再者就是找不到
 
-				kvstr := strings.TrimPrefix(writeTypeStr, "[")
-				kvs := strings.Split(kvstr, "]")
+				kvstr := strings.TrimPrefix(writeTypeStr, "<")
+				kvstr = strings.TrimSuffix(kvstr, ">")
+				kvs := strings.Split(kvstr, ",")
 				tk := kvs[0]
 				tv := kvs[1]
 				if !isBaseType(tk) && tk != "string" {

@@ -1,0 +1,16 @@
+{
+	"1":{
+		"id":1,
+		"name":"汉克",
+		"nickName":"暗夜猎手",
+		"resID":"hank",
+		"desc":"这是一个角色"
+	},
+	"2":{
+		"id":2,
+		"name":"艾希",
+		"nickName":"寒冰射手",
+		"resID":"ashe",
+		"desc":"这是一个射手"
+	}
+}

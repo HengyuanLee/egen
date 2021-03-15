@@ -289,13 +289,15 @@ func (g *Genjson) processSheetLoop(buf *bytes.Buffer, filename string, sheetName
 			}
 			buf.WriteString(getTabs(level + 1))
 
-			rightIndex := strings.Index(tname, "]")
-			isMap := (strings.HasPrefix(tname, "[") && rightIndex != 1 && rightIndex != -1)
+			isMap := false
 			//对象是否数组类型
 			//对象是否数组类型
-			isList := strings.HasPrefix(tname, "[]")
+			isList := isListField(tname)
 			if isList {
-				tname = strings.TrimPrefix(tname, "[]")
+				tname = strings.TrimPrefix(tname, "<")
+				tname = strings.TrimSuffix(tname, ">")
+			}else{
+				isMap = isMapField(tname)
 			}
 			if isBaseType(tname) {
 				buf.WriteString("\"" + fieldName + "\":")
@@ -354,10 +356,11 @@ func (g *Genjson) processSheetLoop(buf *bytes.Buffer, filename string, sheetName
 					value = sbf.String()
 				}
 			} else if isMap {
-				rightIndex := strings.Index(tname, "]")
-				if strings.HasPrefix(tname, "[") && rightIndex != 1 && rightIndex != -1 {
-					kvstr := strings.TrimPrefix(tname, "[")
-					kvs := strings.Split(kvstr, "]")
+				rightIndex := strings.Index(tname, ",")
+				if strings.HasPrefix(tname, "<") && strings.HasSuffix(tname, ">") && rightIndex != 1 && rightIndex != -1 {
+					kvstr := strings.TrimPrefix(tname, "<")
+					kvstr = strings.TrimSuffix(kvstr, ">")
+					kvs := strings.Split(kvstr, ",")
 					tk := kvs[0]
 					tv := kvs[1]
 					if !isBaseType(tk) && tk != "string" {

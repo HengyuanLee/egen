@@ -1,0 +1,16 @@
+{
+	"1":{
+		"id":1,
+		"name":"地图一",
+		"resID":"map1",
+		"miniResID":"m1",
+		"desc":"地图一"
+	},
+	"2":{
+		"id":2,
+		"name":"地图二",
+		"resID":"map2",
+		"miniResID":"m2",
+		"desc":"地图二"
+	}
+}

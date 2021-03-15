@@ -18,7 +18,7 @@ var (
 
 	// 文件类型导出
 	flagGenAll      = flag.String("increment", "false", "false：生成全部xlxs，true:增量生成xlsx")
-	flagPackageName = flag.String("package", "ConfigData", "设置生成代码的包名/命名空间")
+	flagPackageName = flag.String("package", "TableData", "设置生成代码的包名/命名空间")
 	flagLuaOut      = flag.String("lua_out", "./gen/lua", "生成lua代码路径 output lua code (*.lua)")
 	flagJsonOut     = flag.String("json_out", "./gen/json", "生成json代码路径 output json format (*.json)")
 	flagGoOut       = flag.String("go_out", "./gen/go", "生成go代码路径 output golang code (*.go)")

@@ -174,7 +174,8 @@ func (g *Gengo) processBuildinSheet(filename string, sheetName string, level int
 		if tname == "" || fname == "" {
 			continue
 		}
-		pureTname := strings.TrimPrefix(tname, "[]")
+		pureTname := strings.TrimPrefix(tname, "<")
+		pureTname = strings.TrimSuffix(pureTname, ">")
 		writeTypeStr := strings.TrimSpace(typeCell.String())
 		if strings.HasPrefix(fname, "!") {
 			Warn("go: 忽略字段：" + fname)
@@ -192,13 +193,11 @@ func (g *Gengo) processBuildinSheet(filename string, sheetName string, level int
 		var isList bool
 		var isMap bool
 
-		isList = strings.HasPrefix(tname, "[]")
-
+		isList = isListField(tname)
 		if isList {
 			isMap = false
 		} else {
-			rightIndex := strings.Index(tname, "]")
-			isMap = (strings.HasPrefix(tname, "[") && rightIndex != 1 && rightIndex != -1)
+			isMap = isMapField(tname)
 			isMapFront = isMap
 		}
 		var subSheetExist bool
@@ -230,8 +229,9 @@ func (g *Gengo) processBuildinSheet(filename string, sheetName string, level int
 			}
 		} else {
 			//以下仅仅是为了检查配置是否正确
-			newstr := strings.TrimPrefix(tname, "[")
-			kvstr := strings.Split(newstr, "]")
+			newstr := strings.TrimPrefix(tname, "<")
+			newstr = strings.TrimSuffix(newstr, ">")
+			kvstr := strings.Split(newstr, ",")
 			if len(kvstr) == 2 {
 				tk := kvstr[0]
 				tv := kvstr[1]

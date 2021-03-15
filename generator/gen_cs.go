@@ -159,6 +159,7 @@ func (g *Gencs) processBuildinSheet(filename string, sheetName string, level int
 
 	writedMap := make(map[int]bool)
 	isMapFront := false //前面是map的话下一个是它的值
+
 	for index, nameCell := range fieldNameRow.Cells {
 		if isMapFront {
 			continue
@@ -167,7 +168,11 @@ func (g *Gencs) processBuildinSheet(filename string, sheetName string, level int
 		typeCell := fieldTypeRow.Cells[index]
 		fname := strings.TrimSpace(nameCell.String())
 		tname := strings.TrimSpace(typeCell.String())
-		pureTname := strings.TrimPrefix(tname, "[]")
+		if tname == "" || fname == "" {
+			continue
+		}
+		pureTname := strings.TrimPrefix(tname, "<")
+		pureTname = strings.TrimSuffix(pureTname, ">")
 		writeTypeStr := strings.TrimSpace(typeCell.String())
 		if strings.HasPrefix(fname, "!") {
 			continue
@@ -181,13 +186,12 @@ func (g *Gencs) processBuildinSheet(filename string, sheetName string, level int
 
 		var isList bool
 		var isMap bool
-
-		isList = strings.HasPrefix(tname, "[]")
+	
+		isList = isListField(tname)
 		if isList {
 			isMap = false
 		} else {
-			rightIndex := strings.Index(tname, "]")
-			isMap = (strings.HasPrefix(tname, "[") && rightIndex != 1 && rightIndex != -1)
+			isMap = isMapField(tname)
 			isMapFront = isMap
 		}
 
@@ -213,9 +217,11 @@ func (g *Gencs) processBuildinSheet(filename string, sheetName string, level int
 				}
 			}
 		} else {
+			//Map类型
 			//检查配置是否正确
-			newstr := strings.TrimPrefix(tname, "[")
-			kvstr := strings.Split(newstr, "]")
+			newstr := strings.TrimPrefix(tname, "<")
+			newstr = strings.TrimSuffix(newstr, ">")
+			kvstr := strings.Split(newstr, ",")
 			if len(kvstr) == 2 {
 				tk := kvstr[0]
 				tv := kvstr[1]
@@ -234,6 +240,7 @@ func (g *Gencs) processBuildinSheet(filename string, sheetName string, level int
 						subFilename = filename
 						subSheetName = tv
 					}
+					Warn("getFileSheet(subFilename, subSheetName) "+subSheetName)
 					subSheet, ok := getFileSheet(subFilename, subSheetName)
 					if getSheetType(subSheet) == "enum" {
 						Error("cs: map的value不支持枚举类型 " + tname)
