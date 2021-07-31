@@ -1,46 +1,66 @@
 {
 	"1":{
 		"id":1,
-		"careerType":1,
+		"careerType":2,
 		"name":"盖利特",
 		"iconId":"10012",
 		"attr" : {
 			"3" : 12,
-			"1" : 312
+			"1" : 213
 		},
-		
-		"piceIds":[1,2,3, 3,9,7,4],
-		"worldPos":{
-			"x":5,
-			"y":4,
-			"z":9
-		},
-		"localPos":{
-			"x":2,
-			"y":54,
-			"z":0
+		"piceIds":[1,2,3],
+		"localPos" : {
+			"x" : 2,
+			"y" : 4,
+			"z" : 5
 		}
 	},
 	"2":{
 		"id":2,
-		"careerType":1,
+		"careerType":3,
 		"name":"爱丽丝",
 		"iconId":"1020",
 		"attr" : {
-			"21" : 2,
-			"45" : 45
+			"3" : 12,
+			"1" : 214
 		},
-		
-		"piceIds":[5, 6,7],
-		"worldPos":{
-			"x":7,
-			"y":6,
-			"z":5
+		"piceIds":[3,5],
+		"localPos" : {
+			"x" : 8,
+			"y" : 2,
+			"z" : 6
+		}
+	},
+	"3":{
+		"id":3,
+		"careerType":2,
+		"name":"盖利特3",
+		"iconId":"10012",
+		"attr" : {
+			"3" : 12,
+			"1" : 213
 		},
-		"localPos":{
-			"x":4,
-			"y":5,
-			"z":0
+		"piceIds":[1,2,3],
+		"localPos" : {
+			"x" : 2,
+			"y" : 4,
+			"z" : 5
+		}
+	},
+	"4":{
+		"id":4,
+		"careerType":3,
+		"name":"爱丽丝4",
+		"iconId":"1020",
+		"attr" : {
+			"3" : 12,
+			"1" : 214
+		},
+		"piceIds":[3,5],
+		"localPos" : {
+			"x" : 8,
+			"y" : 2,
+			"z" : 6
 		}
 	}
 }

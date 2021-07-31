@@ -8,5 +8,10 @@
 		"EE":6,
 		"RT":7,
 		"NN":8
+	},
+	"CareerType":{
+		"Warrior":1,
+		"Mage":2,
+		"GG":3
 	}
 }

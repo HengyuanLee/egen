@@ -73,10 +73,11 @@ func (g *Gencs) genLocal(file string) {
 		for _, sheet := range xf.Sheets {
 			if !strings.HasPrefix(sheet.Name, "!") && sheet.Name != "@Alias" && getSheetType(sheet) == "object" {
 				buf.WriteString(getTabs(1) + "public class ")
-				buf.WriteString(sheet.Name)
+				buf.WriteString(filename)
 				b := g.processBuildinSheet(filename, sheet.Name, 1)
 				buf.WriteString(b.String())
 				buf.WriteString("\n")
+				break
 			}
 		}
 		buf.WriteString("}")
@@ -158,13 +159,9 @@ func (g *Gencs) processBuildinSheet(filename string, sheetName string, level int
 	fieldTypeRow := sheet.Rows[3]
 
 	writedMap := make(map[int]bool)
-	isMapFront := false //前面是map的话下一个是它的值
 
 	for index, nameCell := range fieldNameRow.Cells {
-		if isMapFront {
-			continue
-		}
-		isMapFront = false
+
 		typeCell := fieldTypeRow.Cells[index]
 		fname := strings.TrimSpace(nameCell.String())
 		tname := strings.TrimSpace(typeCell.String())
@@ -192,7 +189,6 @@ func (g *Gencs) processBuildinSheet(filename string, sheetName string, level int
 			isMap = false
 		} else {
 			isMap = isMapField(tname)
-			isMapFront = isMap
 		}
 
 		var subSheetExist bool

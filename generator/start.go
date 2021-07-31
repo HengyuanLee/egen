@@ -123,6 +123,12 @@ func Start() {
 	Comment = comment
 	PackageName = packageName
 	Xlsxfiles = xlsxfiles
+
+	if Islegal() == false {
+		Error("填写表格格式错误，生成失败")
+		return
+	}
+
 	if luaout != "" {
 		Lua().Gen(luaout)
 	}

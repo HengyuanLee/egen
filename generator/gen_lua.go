@@ -82,10 +82,15 @@ func (g *Genlua) genLocal(file string) {
 				genFile = true
 			}
 		}
-		for _, sheet := range exlf.Sheets {
+
+		for i, sheet := range exlf.Sheets {
 			if !strings.HasPrefix(sheet.Name, "!") && getSheetType(sheet) == "object" {
-				buf.WriteString("\n")
-				buf.WriteString(PackageName + "." + sheet.Name + " =")
+				if i == 0 {
+					buf.WriteString("\n")
+					buf.WriteString(PackageName + "." + filename + " =")
+				}else{
+					buf.WriteString(",")
+				}
 				bs := g.processSheet(filename, sheet.Name)
 				buf.WriteString(bs.String())
 				genFile = true
@@ -156,16 +161,14 @@ func (g *Genlua) processSheet(filename string, sheetName string) *bytes.Buffer {
 			Fatal("lua: 表头小于4行" + sheet.Name)
 			return buf
 		}
-		isList := true
-		isRoot := true
-		g.processSheetLoop(buf, filename, sheetName, make([]string, 0), level, isRoot, isList)
+		g.processSheetLoop(buf, filename, sheetName, level)
 		buf.WriteString("\n" + getTabs(level) + "}")
 	}
 
 	return buf
 }
 
-func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName string, pIds []string, level int, pIsRoot bool, pIsList bool) {
+func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName string, level int) {
 	sheet, ok := getFileSheet(filename, sheetName)
 	if !ok {
 		return
@@ -190,34 +193,8 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 			if mainId == "" {
 				continue
 			}
-			if pIsRoot {
-				ownerRows = append(ownerRows, row)
-			} else {
-				contain := func(id string) bool {
-					for _, v := range pIds {
-						if id == v {
-							return true
-						}
-					}
-					return false
-				}
-				//id刷选，只打印id匹配成功的
-				if contain(mainId) {
-					ownerRows = append(ownerRows, row)
-				}
-			}
+			ownerRows = append(ownerRows, row)
 		}
-	}
-	if !pIsList && len(ownerRows) > 1 {
-		pidstr := func() string {
-			result := ""
-			for _, v := range pIds {
-				result += v + ","
-			}
-			return result
-		}
-		Error("lua: 矛盾，为非数组类型，但找到超过1个实例对象:" + sheet.Name + "  ids:" + pidstr())
-		return
 	}
 
 	for _, row := range ownerRows {
@@ -225,22 +202,20 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 			buf.WriteString(",\n")
 			buf.WriteString(getTabs(level))
 		}
-		if isFirstSheetWirte && pIsRoot {
+		if isFirstSheetWirte {
 			buf.WriteString(getTabs(level))
 		}
 		isFirstSheetWirte = false
 
-		if pIsRoot {
-			curid := row.Cells[0].String()
-			tname := typeCells[0].String()
-			if isBaseType(tname) {
-				buf.WriteString("[" + curid + "]" + "=")
-			} else if tname == "string" {
-				buf.WriteString("[\"" + curid + "\"]" + "=")
-			} else {
-				Error("lua: 每行数据头的字段 id 数据类型只能为基本类型或string")
-				continue
-			}
+		curid := row.Cells[0].String()
+		tname := typeCells[0].String()
+		if isBaseType(tname) {
+			buf.WriteString("[" + curid + "]" + "=")
+		} else if tname == "string" {
+			buf.WriteString("[\"" + curid + "\"]" + "=")
+		} else {
+			Error("lua: 每行数据头的字段 id 数据类型只能为基本类型或string")
+			continue
 		}
 		buf.WriteString("{")
 
@@ -285,8 +260,6 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 				_, err := strconv.Atoi(fname)
 				if err == nil {
 					fname = "[" + fname + "]"
-				} else {
-					fname = "['" + fname + "']"
 				}
 			}
 			buf.WriteString(getTabs(level + 1))
@@ -301,58 +274,37 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 				buf.WriteString(fname + " = ")
 				if isList {
 					value = ""
-					for i := index; i < len(row.Cells); i++ {
-						_cell := row.Cells[i]
-						_name := fieldCells[i].String()
-						if fname == _name {
-							writedCellMap[i] = true
-							_valList := strings.Split(_cell.String(), listSplit)
-							newv := ""
-							for _, v := range _valList {
-								if v == "" {
-									continue
-								}
-								if isAlias {
-									newv += getFileAliasValue(filename, v)
-								} else {
-									newv += v
-								}
-								newv += ","
-							}
-							newv = strings.TrimSuffix(newv, ",")
-							if i != index {
-								value += ", "
-							}
-							value += newv
+					_valList := strings.Split(cell.String(), listSplit)
+					newv := ""
+					for _, v := range _valList {
+						if v == "" {
+							continue
 						}
+						if isAlias {
+							newv += getFileAliasValue(filename, v)
+						} else {
+							newv += v
+						}
+						newv += ","
 					}
+					newv = strings.TrimSuffix(newv, ",")
+					value += newv
 				}
 			} else if tname == "string" {
 				buf.WriteString(fname + " = ")
 				if isList {
 					value = ""
 					//同一行可能多个数组同一个fname
-					for i := index; i < len(row.Cells); i++ {
-						_cell := row.Cells[i]
-						_name := fieldCells[i].String()
-						_val := _cell.String()
-						if isAlias {
-							_val = getFileAliasValue(filename, _val)
+					_val := strings.TrimSpace(cell.String())
+					if isAlias {
+						_val = getFileAliasValue(filename, _val)
+					}
+					ss := strings.Split(_val, listSplit)
+					for i, v := range ss {
+						if i != 0 {
+							value += ","
 						}
-						//同一个fname，同个字段共用
-						if fname == _name {
-							writedCellMap[i] = true
-							if i != index {
-								value += ", "
-							}
-							ss := strings.Split(_val, listSplit)
-							for i, v := range ss {
-								if i != 0 {
-									value += ","
-								}
-								value += "\"" + v + "\""
-							}
-						}
+						value += "\"" + v + "\""
 					}
 				} else {
 					var sbf bytes.Buffer
@@ -374,37 +326,33 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 					Error("lua: Dictionary只支持key都是string或基本数据类型 id:%s, key:%s ", row.Cells[0].String(),  tname)
 				}
 				value = ""
-				var curfname string
+				var curfname = cell.String()
+				if curfname == "" {
+					continue
+				}
 				var lastAnno string
 				//map类型的解析和拼装
-				//从新遍历出所有filedname 为当前map字段名的值对
-				for i := index; i < len(row.Cells); i++ {
-					_fname := fieldCells[i].String()
-					if i == index {
-						curfname = _fname
-						buf.WriteString( curfname + " = {")
-					}
-					if _fname == "" || _fname != curfname{
+				buf.WriteString( fname + " = {")
+				var keyValueStrs = strings.Split(cell.String(), ",")
+				for i:=0; i<len(keyValueStrs); i++{
+					_kvStr := strings.Split(keyValueStrs[i],":")
+					if len(_kvStr) != 2 {
+						Warn("json: map的key或者value为空，将被忽略，id:%s, 配置",cell.String())
 						continue
 					}
-					if i+1 >= len(row.Cells) {
-						Warn("lua: map找不到值定义，将被忽略，id:%s, key:%s",row.Cells[0].String(), row.Cells[i].String())
-						continue
-					}
-					_key := strings.TrimSpace(row.Cells[i].String())
-					_val := strings.TrimSpace(row.Cells[i+1].String())
+					_key := strings.TrimSpace(_kvStr[0])
+					_val := strings.TrimSpace(_kvStr[1])
+
 					if _key == "" || _val == ""{
 						Warn("lua: map的key或者value为空，将被忽略，id:%s, key:%s  value:%s",row.Cells[0].String(), _key, _val)
 						continue
 					}
-					isAlias := (getCmdValue(sheet, i, "alias") == "true")
+					isAlias := (getCmdValue(sheet, index, "alias") == "true")
 					if isAlias {
 						_key = getFileAliasValue(filename, _key)
 						_val = getFileAliasValue(filename, _val)
 					}
-					if curfname != "" && _fname == curfname {
-						writedCellMap[i] = true
-						writedCellMap[i+1] = true
+					if curfname != ""  {
 						if _val == "" {
 							_val = g.getEmptyVal(tv)
 							continue
@@ -417,7 +365,7 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 						if isBaseType(tk) {
 							value += "[" + _key + "] = "
 						} else if tk == "string" {
-							value += "[\"" + _key + "\"] = "
+							value +=  _key + " = "
 						}
 						if isBaseType(tv) {
 							value += _val
@@ -442,18 +390,7 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 									Error("lua: map的value不支持枚举类型 " + curfname)
 									continue
 								} else if st == "object" {
-									isRoot := false
-									isList := true
-									subBuf := bytes.NewBufferString("")
-									//类定义的根据所填的id去找
-									ids := strings.Split(_val, listSplit)
-									if isAlias {
-										for index, id := range ids {
-											ids[index] = getFileAliasValue(filename, id)
-										}
-									}
-									g.processSheetLoop(subBuf, subFilename, subSheetName, ids, level+1, isRoot, isList)
-									value += subBuf.String()
+									Error("lua: map的value不支持此未知类型"+curfname)
 								}
 							}
 						}
@@ -490,20 +427,7 @@ func (g *Genlua) processSheetLoop(buf *bytes.Buffer, filename string, sheetName 
 				}
 				switch ctype {
 				case "object":
-					buf.WriteString(fname + " = ")
-					isRoot := false
-					subBuf := bytes.NewBufferString("")
-					vals := row.Cells[index].String()
-					//类定义的根据所填的id去找
-					ids := strings.Split(vals, listSplit)
-					if isAlias {
-						for index, id := range ids {
-							ids[index] = getFileAliasValue(filename, id)
-						}
-					}
-					g.processSheetLoop(subBuf, subFilename, subSheetName, ids, level, isRoot, isList)
-					value = subBuf.String()
-					tname = ctype
+					Error("lua: 不支持此未知类型"+fname)
 				case "enum":
 					buf.WriteString(fname + " = ")
 					find := false

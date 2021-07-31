@@ -73,6 +73,7 @@ func (g *Gengo) genLocal(file string) {
 				b := g.processBuildinSheet(filename, sheet.Name, 0)
 				buf.WriteString(b.String())
 				buf.WriteString("\n")
+				break
 			}
 		}
 		outfile := g.genPath + filename + ".go"
@@ -148,7 +149,7 @@ func (g *Gengo) processBuildinSheet(filename string, sheetName string, level int
 	if !ok {
 		return buf
 	}
-	buf = bytes.NewBufferString("type " + sheetName)
+	buf = bytes.NewBufferString("type " + filename)
 
 	if len(sheet.Rows) < 4 {
 		Error("go: 表格配置" + filename + "/" + sheetName + "少于4行")
@@ -162,12 +163,7 @@ func (g *Gengo) processBuildinSheet(filename string, sheetName string, level int
 	fieldTypeRow := sheet.Rows[3]
 
 	writedMap := make(map[int]bool)
-	isMapFront := false //前面是map的话下一个是它的值
 	for index, nameCell := range fieldNameRow.Cells {
-		if isMapFront {
-			continue
-		}
-		isMapFront = false
 		typeCell := fieldTypeRow.Cells[index]
 		fname := strings.TrimSpace(nameCell.String())
 		tname := strings.TrimSpace(typeCell.String())
@@ -198,7 +194,6 @@ func (g *Gengo) processBuildinSheet(filename string, sheetName string, level int
 			isMap = false
 		} else {
 			isMap = isMapField(tname)
-			isMapFront = isMap
 		}
 		var subSheetExist bool
 		if !isMap {
